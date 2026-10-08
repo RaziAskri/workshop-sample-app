@@ -110,6 +110,40 @@ test('parser errors preserve the JSON error contract', async (t) => {
   assert.deepEqual(await oversized.json(), { error: 'Request body is too large.' });
 });
 
+test('API rejects an overlapping booking for the same room with 409 and the mandated message', async (t) => {
+  const request = await setup(t);
+  await request('/api/bookings', post(booking));
+  const response = await request(
+    '/api/bookings',
+    post({ ...booking, title: 'Different title', organizer: 'Different organizer', startTime: '2030-06-12T09:30:00Z', endTime: '2030-06-12T10:30:00Z' })
+  );
+  assert.equal(response.status, 409);
+  assert.deepEqual(await response.json(), {
+    error: 'Room Cedar is already booked from 09:00 to 10:00, resulting in a conflict from 09:30 to 10:00.',
+  });
+  const listed = await request('/api/bookings?roomId=cedar&date=2030-06-12');
+  assert.equal((await listed.json()).length, 1);
+});
+
+test('API allows the same time range on a different room while rejecting the same-room overlap', async (t) => {
+  const request = await setup(t);
+  await request('/api/bookings', post(booking));
+  const sameRoom = await request('/api/bookings', post(booking));
+  assert.equal(sameRoom.status, 409);
+  const otherRoom = await request('/api/bookings', post({ ...booking, roomId: 'maple' }));
+  assert.equal(otherRoom.status, 201);
+});
+
+test('API allows a back-to-back booking for the same room', async (t) => {
+  const request = await setup(t);
+  await request('/api/bookings', post(booking));
+  const backToBack = await request(
+    '/api/bookings',
+    post({ ...booking, startTime: booking.endTime, endTime: '2030-06-12T11:00:00Z' })
+  );
+  assert.equal(backToBack.status, 201);
+});
+
 test('routes remain case-sensitive, exact, and limited to their supported methods', async (t) => {
   const request = await setup(t);
   assert.equal((await request('/api/Rooms')).status, 404);
