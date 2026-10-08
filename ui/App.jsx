@@ -24,7 +24,7 @@ function RoomSketch({ capacity }) {
   );
 }
 
-function BookingForm({ room, date, onBooked }) {
+export function BookingForm({ room, date, onBooked }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -67,24 +67,24 @@ function BookingForm({ room, date, onBooked }) {
         <fieldset disabled={saving} className="space-y-5 disabled:opacity-60">
           <label className="field-label">
             Meeting title
-            <input name="title" placeholder="e.g. Product brainstorm" required maxLength={100} />
+            <input data-testid="booking-form-title-input" name="title" placeholder="e.g. Product brainstorm" required maxLength={100} />
           </label>
           <label className="field-label">
             Organizer
-            <input name="organizer" placeholder="e.g. Alex Morgan" required maxLength={100} autoComplete="off" />
+            <input data-testid="booking-form-organizer-input" name="organizer" placeholder="e.g. Alex Morgan" required maxLength={100} autoComplete="off" />
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="field-label">
               Start time
-              <input name="startTime" type="time" defaultValue="09:00" step="60" required />
+              <input data-testid="booking-form-start-time-input" name="startTime" type="time" defaultValue="09:00" step="60" required />
             </label>
             <label className="field-label">
               End time
-              <input name="endTime" type="time" defaultValue="10:00" step="60" required />
+              <input data-testid="booking-form-end-time-input" name="endTime" type="time" defaultValue="10:00" step="60" required />
             </label>
           </div>
-          {error && <p role="alert" className="rounded-xl bg-white p-3 text-sm text-red-800">{error}</p>}
-          <button className="book-button" type="submit">
+          {error && <p data-testid="booking-form-error-alert" role="alert" className="rounded-xl bg-white p-3 text-sm text-red-800">{error}</p>}
+          <button data-testid="booking-form-submit-button" className="book-button" type="submit">
             {saving ? 'Booking…' : 'Confirm booking'} <span aria-hidden="true">↗</span>
           </button>
         </fieldset>
